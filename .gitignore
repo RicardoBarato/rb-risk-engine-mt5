@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.log
+*.tmp
+*.bak
+*.xlsx
+
+# MT5 generated/runtime files
+*.ex5
+*.set
+*.opt
+!config/RoboScalper.set
+
+# Local exports can stay in the repo only when intentionally added.
+config/mt5.local.ps1
+runs/
