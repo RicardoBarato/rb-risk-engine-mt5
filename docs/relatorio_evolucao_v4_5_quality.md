@@ -59,7 +59,6 @@ Teste extra de 5 anos da `quality-mtf-trendrunner`: 2021.05.20 a 2026.05.20.
 A evolucao v4.5 trouxe duas familias uteis:
 
 - `quality-mtf-direct`: melhor candidata para produto/forward test, porque tem PF e winrate muito superiores.
-- `quality-mtf-direct`: melhor candidata para produto/forward test, porque tem PF e winrate muito superiores.
 - `quality-mtf-trendrunner`: melhor candidata agressiva, porque superou a `ultra` em 3 anos com PF maior e DD menor.
 - `quality-mtf-ultra`: referencia de potencia bruta, mas inferior ao `trendrunner` na relacao retorno/DD.
 
