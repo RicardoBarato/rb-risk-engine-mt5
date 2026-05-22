@@ -1,0 +1,6 @@
+run,final_balance,profit_factor,total_net_profit,balance_drawdown_maximal,equity_drawdown_maximal,total_trades,short_trades,long_trades,consecutive_losses,report_files,summary_status
+compile,,,,,,,,,,,sem_relatorio_ou_log_lido
+20260522-012537-v47-qa-5y-closedbar,5815.37,,,,,,,,,,verificar_log
+20260522-012210-v47-qa-3y-closedbar,3.45,,,,,,,,,,verificar_log
+20260522-012111-v47-qa-5y-intrabar,5815.37,,,,,,,,,,verificar_log
+20260522-011858-v47-qa-3y-intrabar,3.45,,,,,,,,,,verificar_log
