@@ -112,6 +112,12 @@ else {
 $equity = $InitialDeposit
 $peak = $InitialDeposit
 $maxDd = 0.0
+$maxDdPct = 0.0
+$maxDdPeak = $InitialDeposit
+$maxDdValley = $InitialDeposit
+$maxDdPctAbs = 0.0
+$maxDdPctPeak = $InitialDeposit
+$maxDdPctValley = $InitialDeposit
 $maxLossStreak = 0
 $lossStreak = 0
 $uniqueDays = New-Object System.Collections.Generic.HashSet[string]
@@ -126,6 +132,16 @@ foreach ($trade in $trades) {
     $dd = $peak - $equity
     if ($dd -gt $maxDd) {
         $maxDd = $dd
+        $maxDdPeak = $peak
+        $maxDdValley = $equity
+    }
+
+    $ddPct = if ($peak -gt 0) { ($dd / $peak) * 100.0 } else { 0.0 }
+    if ($ddPct -gt $maxDdPct) {
+        $maxDdPct = $ddPct
+        $maxDdPctAbs = $dd
+        $maxDdPctPeak = $peak
+        $maxDdPctValley = $equity
     }
 
     if ($trade.Pnl -lt 0) {
@@ -181,6 +197,12 @@ $summary = [PSCustomObject]@{
     ProfitFactor  = $profitFactorText
     NetApprox     = [Math]::Round($netApprox, 2)
     MaxDdApprox   = [Math]::Round($maxDd, 2)
+    MaxDdPctApprox = [Math]::Round($maxDdPct, 2)
+    MaxDdPeakApprox = [Math]::Round($maxDdPeak, 2)
+    MaxDdValleyApprox = [Math]::Round($maxDdValley, 2)
+    MaxDdPctAbsApprox = [Math]::Round($maxDdPctAbs, 2)
+    MaxDdPctPeakApprox = [Math]::Round($maxDdPctPeak, 2)
+    MaxDdPctValleyApprox = [Math]::Round($maxDdPctValley, 2)
     MaxLossStreak = $maxLossStreak
     DaysTraded    = $uniqueDays.Count
     OpenPosition  = $null -ne $open

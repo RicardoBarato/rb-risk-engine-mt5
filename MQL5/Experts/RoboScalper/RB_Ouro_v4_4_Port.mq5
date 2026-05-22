@@ -1,10 +1,10 @@
 ﻿//+------------------------------------------------------------------+
 //|                                                  RB_Ouro_v4_4.mq5 |
-//|  v4.4: Robustness Mode (mais trades) mantendo ciclo/expansão      |
+//|  v4.5: Quality Mode com reteste, MTF e gestao ativa opcional      |
 //|  mode=0 Selective (PF max) | mode=1 Robust (PF>=1.6 alvo)         |
 //+------------------------------------------------------------------+
 #property strict
-#property version "4.40"
+#property version "4.50"
 
 #include <Trade/Trade.mqh>
 CTrade trade;
@@ -116,6 +116,37 @@ input double ADX_M15_min_robust    = 16.0;
 input bool allow_no_squeeze_selective = false;
 input bool allow_no_squeeze_robust    = true;
 
+// QUALITY STACK
+input bool use_mtf_ema_confirm = false;
+input ENUM_TIMEFRAMES TF_confirm_fast = PERIOD_M5;
+input ENUM_TIMEFRAMES TF_confirm_mid  = PERIOD_M15;
+input int EMA_confirm_fast = 21;
+input int EMA_confirm_slow = 55;
+
+// BREAKOUT / RETEST
+input bool use_breakout_extension_guard = false;
+input double max_breakout_extension_ATR = 0.85;
+input bool use_retest_entry = false;
+input bool allow_direct_breakout_when_retest = true;
+input int retest_window_bars = 8;
+input double retest_zone_ATR = 0.45;
+input double retest_invalidation_ATR = 1.20;
+input double retest_sl_ATR = 1.10;
+input double retest_resume_close_pos_min = 0.58;
+
+// POSITION MANAGEMENT
+input bool use_break_even = false;
+input double break_even_trigger_R = 1.00;
+input int break_even_lock_points = 5;
+input bool use_atr_trailing = false;
+input double trail_start_R = 1.40;
+input double trail_atr_mult = 1.00;
+
+// EQUITY RISK GUARD
+input bool use_equity_risk_guard = false;
+input double equity_dd_cutoff_pct = 0.18;
+input double equity_dd_risk_mult = 0.65;
+
 //==================== STATE ====================//
 double daily_loss_R=0.0;
 int trades_today=0;
@@ -129,6 +160,14 @@ int squeeze_release_countdown=0;
 datetime last_squeeze_bar_time=0;
 
 bool squeeze_seen_recent=false;
+double equity_peak=0.0;
+
+bool pending_retest=false;
+bool pending_retest_buy=true;
+datetime pending_retest_expire=0;
+double pending_retest_level=0.0;
+double pending_retest_sl_ref=0.0;
+double pending_retest_atr_points=0.0;
 
 // handles
 int atr_m1_handle=INVALID_HANDLE;
@@ -143,6 +182,10 @@ int kc_ema_handle=INVALID_HANDLE;
 int kc_atr_handle=INVALID_HANDLE;
 
 int adx_m15_handle=INVALID_HANDLE;
+int ema_confirm_fast_1_handle=INVALID_HANDLE;
+int ema_confirm_slow_1_handle=INVALID_HANDLE;
+int ema_confirm_fast_2_handle=INVALID_HANDLE;
+int ema_confirm_slow_2_handle=INVALID_HANDLE;
 
 //==================== HELPERS ====================//
 int GetSessionDayKey(datetime t)
@@ -378,6 +421,235 @@ double ApplyContextRisk(double risk_pct,double context_quality)
    return adjusted;
 }
 
+double ApplyEquityRiskGuard(double risk_pct)
+{
+   if(!use_equity_risk_guard)
+      return risk_pct;
+
+   double equity=AccountInfoDouble(ACCOUNT_EQUITY);
+   if(equity_peak<=0.0 || equity>equity_peak)
+      equity_peak=equity;
+
+   double dd_pct = (equity_peak>0.0) ? ((equity_peak-equity)/equity_peak) : 0.0;
+   if(dd_pct >= equity_dd_cutoff_pct)
+      risk_pct *= equity_dd_risk_mult;
+
+   return risk_pct;
+}
+
+bool MTFConfirmOK(bool want_buy)
+{
+   if(!use_mtf_ema_confirm)
+      return true;
+
+   double f1[1], s1[1], f2[1], s2[1];
+   if(CopyBuffer(ema_confirm_fast_1_handle,0,0,1,f1)!=1) return false;
+   if(CopyBuffer(ema_confirm_slow_1_handle,0,0,1,s1)!=1) return false;
+   if(CopyBuffer(ema_confirm_fast_2_handle,0,0,1,f2)!=1) return false;
+   if(CopyBuffer(ema_confirm_slow_2_handle,0,0,1,s2)!=1) return false;
+
+   if(want_buy)
+      return (f1[0]>s1[0] && f2[0]>s2[0]);
+
+   return (f1[0]<s1[0] && f2[0]<s2[0]);
+}
+
+void ClearRetest()
+{
+   pending_retest=false;
+   pending_retest_expire=0;
+   pending_retest_level=0.0;
+   pending_retest_sl_ref=0.0;
+   pending_retest_atr_points=0.0;
+}
+
+void ArmRetest(bool buy,double level,double sl_ref,double atr_points)
+{
+   if(!use_retest_entry)
+      return;
+
+   pending_retest=true;
+   pending_retest_buy=buy;
+   pending_retest_level=level;
+   pending_retest_sl_ref=sl_ref;
+   pending_retest_atr_points=atr_points;
+   pending_retest_expire=TimeCurrent() + retest_window_bars*PeriodSeconds(PERIOD_M1);
+}
+
+bool TryRetestEntry(double risk_pct,
+                    double atr_points,
+                    double active_close_pos_min,
+                    bool bias_up,
+                    bool bias_dn,
+                    double high0,
+                    double low0,
+                    double close0,
+                    double close_pos)
+{
+   if(!use_retest_entry || !pending_retest)
+      return false;
+
+   if(TimeCurrent()>pending_retest_expire)
+   {
+      ClearRetest();
+      return false;
+   }
+
+   double ask=SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double bid=SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double zone_points=retest_zone_ATR*atr_points;
+   double invalid_points=retest_invalidation_ATR*atr_points;
+   double resume_min=MathMax(retest_resume_close_pos_min, active_close_pos_min-0.10);
+
+   if(pending_retest_buy)
+   {
+      if(bid < pending_retest_level - invalid_points*_Point)
+      {
+         ClearRetest();
+         return false;
+      }
+
+      double extension_points=(bid-pending_retest_level)/_Point;
+      bool touched=(low0 <= pending_retest_level + zone_points*_Point);
+      bool resumed=(close0 > pending_retest_level && close_pos>=resume_min);
+      bool not_extended=(!use_breakout_extension_guard || extension_points<=max_breakout_extension_ATR*atr_points);
+
+      if(!(bias_up && touched && resumed && not_extended && MTFConfirmOK(true)))
+         return false;
+
+      double buffer_points=structural_buffer_ATR*atr_points;
+      double sl_struct=pending_retest_sl_ref - buffer_points*_Point;
+      double sl_retest=pending_retest_level - retest_sl_ATR*atr_points*_Point;
+      double sl_price=MathMax(sl_struct, sl_retest);
+      double sl_points=(ask-sl_price)/_Point;
+      if(sl_points < MinSL_points)
+      {
+         sl_points=MinSL_points;
+         sl_price=ask-sl_points*_Point;
+      }
+
+      double lots=CalcLots(sl_points, risk_pct);
+      if(lots<=0.0) return true;
+
+      double tp_price=ask + (TP_R*sl_points)*_Point;
+      if(CanSendOrders())
+      {
+         if(trade.Buy(lots,_Symbol,ask,sl_price,tp_price))
+         {
+            trades_today++;
+            ClearRetest();
+         }
+         else
+            last_order_failure_time=TimeCurrent();
+      }
+      return true;
+   }
+
+   if(ask > pending_retest_level + invalid_points*_Point)
+   {
+      ClearRetest();
+      return false;
+   }
+
+   double extension_points=(pending_retest_level-ask)/_Point;
+   bool touched=(high0 >= pending_retest_level - zone_points*_Point);
+   bool resumed=(close0 < pending_retest_level && close_pos <= (1.0-resume_min));
+   bool not_extended=(!use_breakout_extension_guard || extension_points<=max_breakout_extension_ATR*atr_points);
+
+   if(!(bias_dn && touched && resumed && not_extended && MTFConfirmOK(false)))
+      return false;
+
+   double buffer_points=structural_buffer_ATR*atr_points;
+   double sl_struct=pending_retest_sl_ref + buffer_points*_Point;
+   double sl_retest=pending_retest_level + retest_sl_ATR*atr_points*_Point;
+   double sl_price=MathMin(sl_struct, sl_retest);
+   double sl_points=(sl_price-bid)/_Point;
+   if(sl_points < MinSL_points)
+   {
+      sl_points=MinSL_points;
+      sl_price=bid+sl_points*_Point;
+   }
+
+   double lots=CalcLots(sl_points, risk_pct);
+   if(lots<=0.0) return true;
+
+   double tp_price=bid - (TP_R*sl_points)*_Point;
+   if(CanSendOrders())
+   {
+      if(trade.Sell(lots,_Symbol,bid,sl_price,tp_price))
+      {
+         trades_today++;
+         ClearRetest();
+      }
+      else
+         last_order_failure_time=TimeCurrent();
+   }
+   return true;
+}
+
+void ManageOpenPosition()
+{
+   if(!use_break_even && !use_atr_trailing)
+      return;
+   if(!CanSendOrders())
+      return;
+   if(!PositionSelect(_Symbol))
+      return;
+
+   long type=PositionGetInteger(POSITION_TYPE);
+   double open_price=PositionGetDouble(POSITION_PRICE_OPEN);
+   double sl=PositionGetDouble(POSITION_SL);
+   double tp=PositionGetDouble(POSITION_TP);
+   if(sl<=0.0)
+      return;
+
+   double bid=SymbolInfoDouble(_Symbol, SYMBOL_BID);
+   double ask=SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double price=(type==POSITION_TYPE_BUY) ? bid : ask;
+   double risk_points=(type==POSITION_TYPE_BUY) ? ((open_price-sl)/_Point) : ((sl-open_price)/_Point);
+   double profit_points=(type==POSITION_TYPE_BUY) ? ((price-open_price)/_Point) : ((open_price-price)/_Point);
+   if(risk_points<=0.0 || profit_points<=0.0)
+      return;
+
+   double new_sl=sl;
+
+   if(use_break_even && profit_points >= break_even_trigger_R*risk_points)
+   {
+      double be=(type==POSITION_TYPE_BUY) ? open_price + break_even_lock_points*_Point
+                                          : open_price - break_even_lock_points*_Point;
+      if(type==POSITION_TYPE_BUY && be>new_sl)
+         new_sl=be;
+      if(type==POSITION_TYPE_SELL && be<new_sl)
+         new_sl=be;
+   }
+
+   if(use_atr_trailing && profit_points >= trail_start_R*risk_points)
+   {
+      double atr_buf[1];
+      if(CopyBuffer(atr_m1_handle,0,0,1,atr_buf)==1)
+      {
+         double trail=(type==POSITION_TYPE_BUY) ? price - trail_atr_mult*atr_buf[0]
+                                                : price + trail_atr_mult*atr_buf[0];
+         if(type==POSITION_TYPE_BUY && trail>new_sl)
+            new_sl=trail;
+         if(type==POSITION_TYPE_SELL && trail<new_sl)
+            new_sl=trail;
+      }
+   }
+
+   new_sl=NormalizeDouble(new_sl, _Digits);
+   if(MathAbs(new_sl-sl) < _Point)
+      return;
+
+   double min_stop_points=(double)SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   if(type==POSITION_TYPE_BUY && new_sl >= bid-min_stop_points*_Point)
+      return;
+   if(type==POSITION_TYPE_SELL && new_sl <= ask+min_stop_points*_Point)
+      return;
+
+   trade.PositionModify(_Symbol, new_sl, tp);
+}
+
 // Squeeze computations
 bool ComputeSqueezeOn(bool &squeeze_on)
 {
@@ -528,6 +800,14 @@ int OnInit()
    if(use_adx_m15_gate)
       adx_m15_handle = iADX(_Symbol, PERIOD_M15, ADX_M15_period);
 
+   if(use_mtf_ema_confirm)
+   {
+      ema_confirm_fast_1_handle = iMA(_Symbol, TF_confirm_fast, EMA_confirm_fast, 0, MODE_EMA, PRICE_CLOSE);
+      ema_confirm_slow_1_handle = iMA(_Symbol, TF_confirm_fast, EMA_confirm_slow, 0, MODE_EMA, PRICE_CLOSE);
+      ema_confirm_fast_2_handle = iMA(_Symbol, TF_confirm_mid,  EMA_confirm_fast, 0, MODE_EMA, PRICE_CLOSE);
+      ema_confirm_slow_2_handle = iMA(_Symbol, TF_confirm_mid,  EMA_confirm_slow, 0, MODE_EMA, PRICE_CLOSE);
+   }
+
    if(atr_m1_handle==INVALID_HANDLE || adx_m1_handle==INVALID_HANDLE ||
       ema_fast_handle==INVALID_HANDLE || ema_slow_handle==INVALID_HANDLE)
       return INIT_FAILED;
@@ -541,8 +821,15 @@ int OnInit()
    if(use_adx_m15_gate && adx_m15_handle==INVALID_HANDLE)
       return INIT_FAILED;
 
+   if(use_mtf_ema_confirm &&
+      (ema_confirm_fast_1_handle==INVALID_HANDLE || ema_confirm_slow_1_handle==INVALID_HANDLE ||
+       ema_confirm_fast_2_handle==INVALID_HANDLE || ema_confirm_slow_2_handle==INVALID_HANDLE))
+      return INIT_FAILED;
+
    trade.SetDeviationInPoints(SlippageMax_points);
    session_day_key = GetSessionDayKey(TimeCurrent());
+   equity_peak=AccountInfoDouble(ACCOUNT_EQUITY);
+   ClearRetest();
    return INIT_SUCCEEDED;
 }
 
@@ -554,10 +841,15 @@ void OnTick()
 
    ResetDailyIfNeeded();
 
+   if(PositionSelect(_Symbol))
+   {
+      ManageOpenPosition();
+      return;
+   }
+
    if(last_sl_time>0 && (TimeCurrent()-last_sl_time) < cooldown_minutes_after_sl*60) return;
    if(last_order_failure_time>0 && (TimeCurrent()-last_order_failure_time) < cooldown_seconds_after_order_fail) return;
    if(!SessionOK()) return;
-   if(PositionSelect(_Symbol)) return;
 
    if(locked_today) return;
    if(trades_today >= max_trades_day) return;
@@ -570,6 +862,7 @@ void OnTick()
    if(context_quality < min_quality_for_trade) return;
 
    double risk_pct=ApplyContextRisk(CalcRiskPct(vol_ratio), context_quality);
+   risk_pct=ApplyEquityRiskGuard(risk_pct);
    if(risk_pct<=0.0) return;
 
    double active_adx_min=ADX_min;
@@ -618,8 +911,25 @@ void OnTick()
    double bid=SymbolInfoDouble(_Symbol, SYMBOL_BID);
    double buffer_points=structural_buffer_ATR*atr_points;
 
+   if(TryRetestEntry(risk_pct, atr_points, active_close_pos_min, bias_up, bias_dn,
+                     high0, low0, close0, close_pos))
+      return;
+
    if(allow_buy && bias_up && bid>HH15 && close_pos>=active_close_pos_min)
    {
+      double extension_points=(bid-HH15)/_Point;
+      if(use_retest_entry && !allow_direct_breakout_when_retest)
+      {
+         ArmRetest(true, HH15, LL15, atr_points);
+         return;
+      }
+      if(use_breakout_extension_guard && extension_points>max_breakout_extension_ATR*atr_points)
+      {
+         ArmRetest(true, HH15, LL15, atr_points);
+         return;
+      }
+      if(!MTFConfirmOK(true)) return;
+
       double sl_price = LL15 - buffer_points*_Point;
       double sl_points = (ask - sl_price)/_Point;
       if(sl_points < MinSL_points) sl_points = MinSL_points;
@@ -641,6 +951,19 @@ void OnTick()
 
    if(allow_sell && bias_dn && ask<LL15 && close_pos <= (1.0-active_close_pos_min))
    {
+      double extension_points=(LL15-ask)/_Point;
+      if(use_retest_entry && !allow_direct_breakout_when_retest)
+      {
+         ArmRetest(false, LL15, HH15, atr_points);
+         return;
+      }
+      if(use_breakout_extension_guard && extension_points>max_breakout_extension_ATR*atr_points)
+      {
+         ArmRetest(false, LL15, HH15, atr_points);
+         return;
+      }
+      if(!MTFConfirmOK(false)) return;
+
       double sl_price = HH15 + buffer_points*_Point;
       double sl_points = (sl_price - bid)/_Point;
       if(sl_points < MinSL_points) sl_points = MinSL_points;
@@ -673,7 +996,10 @@ void OnTradeTransaction(const MqlTradeTransaction& trans,
    HistorySelect(now-86400, now+60);
 
    long reason=(long)HistoryDealGetInteger(trans.deal, DEAL_REASON);
-   if(reason==DEAL_REASON_SL)
+   double deal_pnl=HistoryDealGetDouble(trans.deal, DEAL_PROFIT) +
+                   HistoryDealGetDouble(trans.deal, DEAL_SWAP) +
+                   HistoryDealGetDouble(trans.deal, DEAL_COMMISSION);
+   if(reason==DEAL_REASON_SL && deal_pnl<0.0)
    {
       daily_loss_R -= 1.0;
       last_sl_time = TimeCurrent();
