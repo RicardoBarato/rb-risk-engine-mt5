@@ -1,0 +1,75 @@
+# Python/cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Secrets and local configuration
+.env
+*.env
+*.key
+*.pem
+*.pfx
+*.crt
+*.cer
+*.ini
+config/mt5.local.ps1
+
+# MT5 generated/runtime files
+*.ex5
+*.set
+*.opt
+*.dat
+*.bak
+*.tmp
+*.cache
+MQL5/Logs/
+MQL5/Files/
+MQL5/Tester/
+MQL5/Profiles/
+MQL5/Presets/
+
+# Public, fictitious examples only
+!examples/*.example.set
+
+# Reports, exports, statements and raw data
+*.log
+*.csv
+*.xlsx
+*.xls
+*.html
+*.htm
+*.zip
+*.rar
+*.7z
+*.jsonl
+*.sqlite
+*.db
+runs/
+reports/
+backtests/
+exports/
+statements/
+transactions/
+real-data/
+private/
+secrets/
+credentials/
+data/raw/
+data/private/
+
+# Private research documents from earlier iterations
+docs/analise_relatorios.md
+docs/backtest_*.md
+docs/eficiencia_capital_alavancagem.md
+docs/especificacao_robo_mt5.md
+docs/experimento_*.md
+docs/experimentos.md
+docs/metodologia_capital_eficiente.md
+docs/pesquisa_*.md
+docs/presets_*.md
+docs/relatorio_*.md
+docs/robustez_*.md
+docs/tecnica_vs_caos.md

@@ -1,0 +1,18 @@
+; Fictitious public example for RBRiskEngine_Public.mq5.
+; Do not treat these values as optimized or recommended trading parameters.
+InpAllowedSymbol=XAUUSD
+InpEnableLiveOrders=false
+InpEnableTesterOrders=true
+InpMagicNumber=100001
+InpRiskPercent=0.25
+InpMaxSpreadPoints=50
+InpDeviationPoints=20
+InpUseSessionFilter=true
+InpSessionStartHour=8
+InpSessionEndHour=16
+InpFastEmaPeriod=20
+InpSlowEmaPeriod=50
+InpAtrPeriod=14
+InpAtrStopMult=1.5
+InpTakeProfitR=2.0
+InpTradeOnNewBarOnly=true
