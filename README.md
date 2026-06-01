@@ -5,7 +5,7 @@
 ![Educational](https://img.shields.io/badge/status-educational-lightgrey)
 ![Risk Management](https://img.shields.io/badge/focus-risk%20management-success)
 
-Educational MetaTrader 5 / MQL5 risk-engine framework focused on systematic trading research, risk controls, backtesting workflow and public/private project hygiene.
+Educational MetaTrader 5 / MQL5 risk-engine framework focused on systematic trading research, risk controls, backtesting workflow and publication hygiene.
 
 This public repository is a sanitized educational release. It is not a profit promise, trading recommendation, signal service, investment product, or production trading system.
 
@@ -15,7 +15,7 @@ Public educational release: `v1.0-public`.
 
 This is the first official public release of RB Risk Engine MT5.
 
-The project started as a short-term trading automation experiment and evolved into a risk-managed Expert Advisor research framework. The public version keeps the architecture, tooling and documentation useful for portfolio review, while private strategy logic, real presets and real reports are intentionally excluded.
+The project started as a short-term trading automation experiment and evolved into a risk-managed Expert Advisor research framework. The public version keeps the architecture, tooling and documentation useful for portfolio review, while proprietary strategy logic, real presets and real reports are intentionally excluded.
 
 ## Why this project matters
 
@@ -25,14 +25,14 @@ This project is not about promising returns. It demonstrates how a discretionary
 - protect capital with explicit risk controls;
 - automate compile and backtest loops;
 - document assumptions and limitations;
-- separate public educational code from private research;
+- separate public educational code from non-public research artifacts;
 - avoid publishing sensitive broker, account or strategy artifacts.
 
 ## Portfolio Value
 
 This repository demonstrates practical experience with MQL5 development, Expert Advisor structure, systematic trading research, risk management, automated backtesting workflow, repository organization, documentation and security hygiene.
 
-It also shows an important engineering decision: the public repository exposes a safe framework, not the private edge, real parameters, broker exports or optimization history.
+It also shows an important engineering decision: the public repository exposes a safe framework, not proprietary edge logic, real parameters, broker exports or optimization history.
 
 ## Skills demonstrated
 
@@ -44,7 +44,7 @@ It also shows an important engineering decision: the public repository exposes a
 - code organization;
 - documentation;
 - security hygiene;
-- public/private project separation.
+- public release boundary management.
 
 ## Technologies
 
@@ -67,8 +67,8 @@ It also shows an important engineering decision: the public repository exposes a
 |   `-- mt5.local.example.ps1
 |-- docs/
 |   |-- ARCHITECTURE.md
-|   |-- PRIVATE_NEXT_VERSION_PLAN.md
 |   |-- PROJECT_HISTORY.md
+|   |-- PUBLICATION_BOUNDARY.md
 |   |-- PUBLIC_RELEASE_NOTES.md
 |   |-- ROADMAP.md
 |   `-- SAFETY_AND_RISK_NOTICE.md
@@ -141,7 +141,7 @@ Backtest artifacts are written to `runs/`, which is intentionally ignored by Git
 
 Public examples are in `examples/`.
 
-They are fictitious and should not be treated as optimized settings. Real presets, broker data, account reports and production settings should stay private.
+They are fictitious and should not be treated as optimized settings. Real presets, broker data, account reports and production settings should stay outside public Git.
 
 ## Logs and reports
 
@@ -151,7 +151,7 @@ The tools can collect tester logs and summarize backtest output. Generated repor
 
 The public version does not include:
 
-- private strategy logic;
+- proprietary strategy logic;
 - real presets;
 - real broker exports;
 - real account reports;
@@ -177,12 +177,7 @@ Public roadmap:
 - keep the public EA safe and readable;
 - maintain strong `.gitignore` coverage.
 
-Private roadmap:
-
-- continue strategy research in a private repository;
-- keep real reports, presets and broker data outside public Git;
-- run walk-forward, Monte Carlo and robustness checks;
-- document risk-adjusted results privately.
+Non-public research, real reports, broker data, production presets and internal planning stay outside this repository. See `docs/PUBLICATION_BOUNDARY.md`.
 
 ## Security
 

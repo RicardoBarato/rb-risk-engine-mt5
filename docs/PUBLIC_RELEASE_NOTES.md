@@ -6,7 +6,7 @@
 
 This is the first official public release of RB Risk Engine MT5.
 
-The project is an educational MQL5 / MetaTrader 5 framework focused on Expert Advisor structure, trading automation workflow, risk-management mechanics, backtesting support and separation between public documentation and private research.
+The project is an educational MQL5 / MetaTrader 5 framework focused on Expert Advisor structure, trading automation workflow, risk-management mechanics, backtesting support and separation between public documentation and non-public research artifacts.
 
 ## What this release contains
 
@@ -17,7 +17,7 @@ The project is an educational MQL5 / MetaTrader 5 framework focused on Expert Ad
 - Security policy.
 - Security audit report.
 - Architecture and project-history documentation.
-- Roadmap and private next-version plan.
+- Public roadmap and publication-boundary documentation.
 - Clean public repository history.
 
 ## What this release does not contain
@@ -35,7 +35,7 @@ The project is an educational MQL5 / MetaTrader 5 framework focused on Expert Ad
 
 ## Removed or excluded
 
-Private research, real presets, real reports, raw exports, tester logs, local MT5 paths, broker-specific configuration, sensitive performance results and production parameters are excluded from the public release.
+Non-public research artifacts, real presets, real reports, raw exports, tester logs, local MT5 paths, broker-specific configuration, sensitive performance results and production parameters are excluded from the public release.
 
 The public examples are synthetic and should not be treated as optimized trading settings.
 
@@ -43,7 +43,7 @@ The public examples are synthetic and should not be treated as optimized trading
 
 Use MetaTrader 5 Strategy Tester or a demo account only.
 
-Live trading is disabled by default in the public EA. Do not enable live trading without independent review and private validation.
+Live trading is disabled by default in the public EA. Do not enable live trading without independent review and controlled validation.
 
 ## Limitations
 

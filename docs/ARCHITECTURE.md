@@ -54,7 +54,7 @@ Private entry logic is intentionally excluded from this repository.
 
 ## Exit logic
 
-The public EA submits initial SL and TP with the order. It does not include private exit logic, trailing logic or production management rules.
+The public EA submits initial SL and TP with the order. It does not include proprietary exit logic, trailing logic or production management rules.
 
 ## Risk management
 
@@ -78,15 +78,13 @@ The automation can collect terminal, tester and agent logs into `runs/`. Those f
 
 ## Extension points
 
-Private development can extend:
+The public scaffold exposes generic extension points for educational discussion:
 
 - signal generation;
 - regime filters;
-- position management;
-- walk-forward validation;
-- Monte Carlo analysis;
-- execution-cost modeling;
-- broker-specific risk checks.
+- position management.
+
+Production logic, optimized parameters, broker-specific configuration and validation outputs are intentionally outside the public repository.
 
 ## Limitations
 

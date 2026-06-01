@@ -16,12 +16,12 @@ Never publish:
 - optimization outputs;
 - real account statements;
 - local machine paths;
-- private strategy parameters.
+- proprietary strategy parameters.
 
 ## Recommended workflow
 
 - Use demo accounts for public examples.
-- Keep real data in ignored local folders or a private repository.
+- Keep real data in ignored local folders or protected non-public storage.
 - Review `.gitignore` before adding new artifact types.
 - Run a sensitive-term search before pushing.
 - Rotate credentials immediately if they are exposed.
@@ -30,4 +30,4 @@ Never publish:
 
 Open a GitHub issue only for non-sensitive security concerns.
 
-If a report contains credentials, account identifiers or private trading details, contact the repository owner privately instead of posting the data publicly.
+If a report contains credentials, account identifiers or sensitive trading details, contact the repository owner privately instead of posting the data publicly.

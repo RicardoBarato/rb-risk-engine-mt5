@@ -1,7 +1,7 @@
 //+------------------------------------------------------------------+
 //|                                          RBRiskEngine_Public.mq5  |
 //| Educational MT5 Expert Advisor scaffold for risk-managed testing. |
-//| This public file intentionally omits private strategy logic.      |
+//| This public file intentionally omits proprietary strategy logic.  |
 //+------------------------------------------------------------------+
 #property strict
 #property version "1.00"

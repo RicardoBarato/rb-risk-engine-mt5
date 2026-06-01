@@ -11,4 +11,4 @@ The public repository uses intentionally generic parameters.
 | session | 08:00-16:00 | Example session filter. |
 | backtest_result | synthetic_example_only | No real performance claim. |
 
-Real presets, broker exports, backtest reports and optimization results belong in a private repository or an encrypted local archive.
+Real presets, broker exports, backtest reports and optimization results belong in protected non-public storage.

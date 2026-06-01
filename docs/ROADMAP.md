@@ -7,15 +7,7 @@
 - Improve documentation clarity.
 - Maintain `.gitignore` coverage for trading artifacts.
 - Avoid publishing performance claims.
-- Keep private strategy logic outside this repository.
+- Keep proprietary strategy logic outside this repository.
+- Keep roadmap items limited to public educational maintenance.
 
-## Private roadmap
-
-- Start the v5 private research repository.
-- Reintroduce private presets under protected storage.
-- Build a repeatable 3-year, 5-year and 10-year validation workflow.
-- Add walk-forward validation.
-- Add Monte Carlo and trade-order reshuffling.
-- Track slippage, spread and execution-cost sensitivity.
-- Document risk-adjusted results privately.
-- Maintain a clear decision log for promoted and rejected versions.
+Non-public validation plans, production parameters, broker data and research decision logs are intentionally outside the scope of this public repository.

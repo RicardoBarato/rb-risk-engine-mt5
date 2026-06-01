@@ -6,7 +6,7 @@ No license file was added in this public hardening pass.
 
 - More control.
 - People can view the code, but they do not receive broad explicit permission to reuse it.
-- Recommended for now while public/private boundaries are still being finalized.
+- Recommended for now while licensing expectations are still being finalized.
 
 ## Option B: MIT
 
@@ -28,4 +28,4 @@ No license file was added in this public hardening pass.
 
 ## Current recommendation
 
-Keep the repository without a license until the public/private split is complete.
+Keep the repository without a license until an explicit licensing decision is made.

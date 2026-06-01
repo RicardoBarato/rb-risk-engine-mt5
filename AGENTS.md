@@ -10,7 +10,7 @@ Maintain a clean, safe and professional public MetaTrader 5 / MQL5 project that 
 - risk controls;
 - backtesting workflow;
 - documentation discipline;
-- separation between public educational code and private research.
+- separation between public educational code and non-public research artifacts.
 
 ## Public Repository Rules
 
@@ -18,7 +18,7 @@ Maintain a clean, safe and professional public MetaTrader 5 / MQL5 project that 
 - Do not commit real `.set` presets.
 - Do not commit logs, reports, account statements or optimization grids.
 - Do not commit account numbers, server names, passwords, tokens or local machine paths.
-- Do not publish private strategy logic or production parameters.
+- Do not publish proprietary strategy logic or production parameters.
 - Keep examples synthetic and clearly marked as fictitious.
 
 ## Technical Direction
@@ -44,4 +44,4 @@ Useful public topics:
 
 ## Private Research
 
-Real strategy research, backtests, presets, broker data and performance analysis should live in a private repository or local encrypted storage, not in this public repository.
+Real strategy research, backtests, presets, broker data and performance analysis should live in protected non-public storage, not in this public repository.

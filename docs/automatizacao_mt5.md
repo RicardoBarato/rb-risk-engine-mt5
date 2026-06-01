@@ -55,8 +55,8 @@ Generated files go to `runs/`, which is ignored by Git.
 
 Do not store login, password or server values in committed files.
 
-If you need to pass credentials during a private local run, pass them directly in your local shell or keep them in ignored local configuration. Never commit them.
+If you need to pass credentials during a local run, pass them directly in your local shell or keep them in ignored local configuration. Never commit them.
 
 ## Public reporting
 
-Only publish synthetic examples or fully sanitized reports. Real broker data, real statements, real `.set` files, real tester logs and optimization results belong in a private repository.
+Only publish synthetic examples or fully sanitized reports. Real broker data, real statements, real `.set` files, real tester logs and optimization results belong in protected non-public storage.

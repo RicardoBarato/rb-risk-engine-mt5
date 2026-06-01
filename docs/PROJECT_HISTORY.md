@@ -40,7 +40,7 @@ The project moved toward explicit risk controls:
 - risk-based position sizing;
 - spread checks;
 - session controls;
-- drawdown-aware research in private artifacts.
+- drawdown-aware research in non-public artifacts.
 
 ## 6. Filter evolution
 
@@ -59,7 +59,7 @@ The project history shows growing attention to:
 - stress testing;
 - robustness under costs.
 
-The public release keeps the vocabulary and workflow but removes private research outputs.
+The public release keeps the vocabulary and workflow but removes non-public research outputs.
 
 ## 8. Backtest workflow evolution
 
@@ -92,12 +92,12 @@ The public tracked tree removes or ignores:
 - real optimization artifacts;
 - local MT5 paths;
 - broker-specific configuration;
-- private strategy source files;
-- performance tables that could reveal private research.
+- proprietary strategy source files;
+- performance tables that could reveal non-public research.
 
-## 11. Private repository scope
+## 11. Publication boundary
 
-The private next version should contain:
+The public repository intentionally excludes:
 
 - real data;
 - real reports;
@@ -108,8 +108,8 @@ The private next version should contain:
 - walk-forward results;
 - Monte Carlo results;
 - broker-execution notes;
-- private execution logs.
+- non-public execution logs.
 
-## 12. Next phase
+## 12. Current public scope
 
-The recommended next phase is a separate private repository for v5 research, while this repository stays as a public, professional and educational portfolio artifact.
+This repository stays limited to public, professional and educational material. Internal research planning and production validation are not published here.
