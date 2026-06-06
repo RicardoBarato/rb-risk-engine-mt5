@@ -1,11 +1,11 @@
-# rb-risk-engine-mt5
+# RB MT5 Auto Backtest Engine
 
 ![MQL5](https://img.shields.io/badge/MQL5-Expert%20Advisor-blue)
 ![MetaTrader 5](https://img.shields.io/badge/MetaTrader%205-supported-informational)
 ![Educational](https://img.shields.io/badge/status-educational-lightgrey)
 ![Risk Management](https://img.shields.io/badge/focus-risk%20management-success)
 
-Educational MetaTrader 5 / MQL5 risk-engine framework focused on systematic trading research, risk controls, backtesting workflow and publication hygiene.
+Public educational MetaTrader 5 / MQL5 framework for automated Expert Advisor testing, risk-aware backtest loops, report collection and publication hygiene.
 
 This public repository is a sanitized educational release. It is not a profit promise, trading recommendation, signal service, investment product, or production trading system.
 
@@ -13,38 +13,40 @@ This public repository is a sanitized educational release. It is not a profit pr
 
 Public educational release: `v1.0-public`.
 
-This is the first official public release of RB Risk Engine MT5.
-
-The project started as a short-term trading automation experiment and evolved into a risk-managed Expert Advisor research framework. The public version keeps the architecture, tooling and documentation useful for portfolio review, while proprietary strategy logic, real presets and real reports are intentionally excluded.
+This project is the public backtesting and MT5 automation foundation that preceded later XAUUSD-specific research. The public version keeps the automation structure, risk controls, documentation and safe publication boundary while excluding proprietary strategy logic, real presets, raw reports and production parameters.
 
 ## Why this project matters
 
-This project is not about promising returns. It demonstrates how a discretionary trading idea can be translated into a controlled engineering workflow:
+This project is not about promising returns. It demonstrates how a trading automation idea can be translated into a controlled engineering workflow:
 
 - define objective rules;
+- compile and execute MT5 Expert Advisor tests repeatedly;
+- collect test artifacts in a structured run folder;
 - protect capital with explicit risk controls;
-- automate compile and backtest loops;
 - document assumptions and limitations;
 - separate public educational code from non-public research artifacts;
 - avoid publishing sensitive broker, account or strategy artifacts.
 
 ## Portfolio Value
 
-This repository demonstrates practical experience with MQL5 development, Expert Advisor structure, systematic trading research, risk management, automated backtesting workflow, repository organization, documentation and security hygiene.
+This repository demonstrates practical experience with MQL5 development, Expert Advisor structure, automated Strategy Tester workflows, risk management, Python report parsing, PowerShell automation, repository organization, documentation and security hygiene.
 
-It also shows an important engineering decision: the public repository exposes a safe framework, not proprietary edge logic, real parameters, broker exports or optimization history.
+It also shows an important engineering decision: the public repository exposes a safe backtesting framework, not proprietary edge logic, real parameters, broker exports or optimization history.
 
 ## Skills demonstrated
 
 - MQL5 / MetaTrader 5 development;
 - Expert Advisor architecture;
-- systematic trading research;
+- automated Strategy Tester workflows;
+- repeatable backtest execution;
 - risk management;
-- backtesting workflow;
+- report parsing and analysis;
+- PowerShell automation;
+- Python tooling;
 - code organization;
 - documentation;
 - security hygiene;
-- public release boundary management.
+- public/private research boundary management.
 
 ## Technologies
 
@@ -111,7 +113,7 @@ powershell -ExecutionPolicy Bypass -File tools\mt5_compile.ps1
 
 The script copies `MQL5\Experts\RBRiskEngine\RBRiskEngine_Public.mq5` into the MT5 data directory and calls `MetaEditor64.exe`.
 
-## Run in demo or Strategy Tester
+## Run an automated MT5 backtest
 
 Use demo mode first. The public EA has live orders disabled by default:
 
@@ -120,7 +122,7 @@ InpEnableLiveOrders=false
 InpEnableTesterOrders=true
 ```
 
-Run a basic backtest:
+Run a basic Strategy Tester job:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools\mt5_backtest.ps1 -CompileFirst
@@ -135,7 +137,17 @@ powershell -ExecutionPolicy Bypass -File tools\mt5_backtest.ps1 `
   -CompileFirst
 ```
 
-Backtest artifacts are written to `runs/`, which is intentionally ignored by Git.
+Backtest artifacts are written to `runs/`, which is intentionally ignored by Git. The runner saves a redacted configuration copy as `tester.redacted.ini` for safer artifact handling.
+
+## Analyze reports privately
+
+Generated performance reports are private research artifacts by default. The report analyzer writes to an ignored folder unless another output path is explicitly provided:
+
+```powershell
+python tools\analyze_mt5_reports.py --output reports\private\analise_relatorios.md
+```
+
+Do not commit generated performance reports unless they are synthetic, intentionally public and manually reviewed.
 
 ## Example configuration
 
@@ -175,7 +187,9 @@ Public roadmap:
 - keep documentation clean and educational;
 - improve examples with synthetic data only;
 - keep the public EA safe and readable;
-- maintain strong `.gitignore` coverage.
+- maintain strong `.gitignore` coverage;
+- improve safe automation around compile, test and report collection;
+- avoid publishing performance claims.
 
 Non-public research, real reports, broker data, production presets and internal planning stay outside this repository. See `docs/PUBLICATION_BOUNDARY.md`.
 
