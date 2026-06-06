@@ -1,6 +1,6 @@
 # Agent Instructions
 
-This repository is the public educational version of `rb-risk-engine-mt5`.
+This repository is the public educational version of `MT5 EA Auto Backtest Engine`.
 
 ## Current Goal
 
@@ -8,7 +8,7 @@ Maintain a clean, safe and professional public MetaTrader 5 / MQL5 project that 
 
 - Expert Advisor structure;
 - risk controls;
-- backtesting workflow;
+- automated backtesting workflow;
 - documentation discipline;
 - separation between public educational code and non-public research artifacts.
 
@@ -32,6 +32,7 @@ Useful public topics:
 - risk-based position sizing;
 - stop-loss and take-profit placement;
 - Strategy Tester automation;
+- automated backtest-loop workflow;
 - report parsing and validation workflow.
 
 ## Validation Workflow
