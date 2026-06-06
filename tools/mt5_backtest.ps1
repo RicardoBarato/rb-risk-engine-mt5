@@ -30,6 +30,16 @@ function Convert-ToSafeName {
     return $safe
 }
 
+function Save-RedactedTesterConfig {
+    param(
+        [string] $DestinationPath,
+        [string] $ConfigText
+    )
+
+    $redacted = $ConfigText -replace '(?m)^Password=.*$', 'Password=<redacted>'
+    Set-Content -LiteralPath $DestinationPath -Value $redacted -Encoding ASCII
+}
+
 function Compile-ExternalExpert {
     param(
         [hashtable] $Paths,
@@ -131,6 +141,10 @@ if ($SetPath -ne "" -and (Test-Path -LiteralPath $SetPath)) {
 
 $commonConfig = ""
 if ($Login -ne "" -or $Password -ne "" -or $Server -ne "") {
+    if ($Password -ne "") {
+        Write-Warning "A senha sera escrita apenas no tester.ini temporario dentro da pasta de dados do MT5. O artefato copiado para runs/ sera redigido."
+    }
+
     $commonConfig = @"
 [Common]
 Login=$Login
@@ -168,11 +182,14 @@ $testerLines += @(
 )
 
 $testerConfig = $commonConfig + ($testerLines -join "`r`n") + "`r`n"
+$redactedConfigPath = Join-Path $runDir "tester.redacted.ini"
 
 Set-Content -LiteralPath $configPath -Value $testerConfig -Encoding ASCII
+Save-RedactedTesterConfig -DestinationPath $redactedConfigPath -ConfigText $testerConfig
 
 Write-Host "Terminal: $($paths.Terminal)"
-Write-Host "Config: $configPath"
+Write-Host "Config temporario MT5: $configPath"
+Write-Host "Config redigido salvo em: $redactedConfigPath"
 Write-Host "Relatorio base: $reportBase"
 
 $launchTime = Get-Date
@@ -181,7 +198,6 @@ $process = Start-Process -FilePath $paths.Terminal -ArgumentList $argList -PassT
 
 if (!$process.WaitForExit($TimeoutSeconds * 1000)) {
     Stop-Process -Id $process.Id -Force
-    Copy-Item -LiteralPath $configPath -Destination (Join-Path $runDir "tester.ini") -Force
     throw "Backtest excedeu $TimeoutSeconds segundos. Verifique login/sincronizacao do MT5 e historico do simbolo."
 }
 
@@ -206,11 +222,9 @@ $stillRunning = Get-Process terminal64 -ErrorAction SilentlyContinue | Where-Obj
 
 if ($stillRunning) {
     $stillRunning | Stop-Process -Force
-    Copy-Item -LiteralPath $configPath -Destination (Join-Path $runDir "tester.ini") -Force
     throw "MT5 continuou aberto apos o comando de teste. Processo encerrado para evitar ficar pendurado."
 }
 
-Copy-Item -LiteralPath $configPath -Destination (Join-Path $runDir "tester.ini") -Force
 Get-ChildItem -LiteralPath $mt5RunDir -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne "tester.ini" } | ForEach-Object {
     Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $runDir $_.Name) -Force
 }
