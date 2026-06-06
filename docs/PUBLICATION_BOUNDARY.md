@@ -1,13 +1,13 @@
 # Publication Boundary
 
-This repository is the public educational version of `rb-risk-engine-mt5`.
+This repository is the public educational version of `MT5 EA Auto Backtest Engine`.
 
 It contains:
 
 - educational MQL5 source code;
 - public documentation;
 - synthetic examples;
-- public compile, backtest and report-analysis tooling.
+- public compile, automated backtest-loop and report-analysis tooling.
 
 It does not contain:
 
