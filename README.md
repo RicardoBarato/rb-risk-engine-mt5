@@ -1,11 +1,11 @@
-# RB MT5 Auto Backtest Engine
+# MT5 EA Auto Backtest Engine
 
 ![MQL5](https://img.shields.io/badge/MQL5-Expert%20Advisor-blue)
 ![MetaTrader 5](https://img.shields.io/badge/MetaTrader%205-supported-informational)
 ![Educational](https://img.shields.io/badge/status-educational-lightgrey)
 ![Risk Management](https://img.shields.io/badge/focus-risk%20management-success)
 
-Public educational MetaTrader 5 / MQL5 framework for automated Expert Advisor testing, risk-aware backtest loops, report collection and publication hygiene.
+Public educational MetaTrader 5 / MQL5 framework combining an Expert Advisor scaffold with automated Strategy Tester loops, report collection and publication hygiene.
 
 This public repository is a sanitized educational release. It is not a profit promise, trading recommendation, signal service, investment product, or production trading system.
 
@@ -13,7 +13,7 @@ This public repository is a sanitized educational release. It is not a profit pr
 
 Public educational release: `v1.0-public`.
 
-This project is the public backtesting and MT5 automation foundation that preceded later XAUUSD-specific research. The public version keeps the automation structure, risk controls, documentation and safe publication boundary while excluding proprietary strategy logic, real presets, raw reports and production parameters.
+This project is the public backtesting and MT5 automation foundation that preceded later XAUUSD-specific research. The public version keeps the EA scaffold, automation structure, risk controls, documentation and safe publication boundary while excluding proprietary strategy logic, real presets, raw reports and production parameters.
 
 ## Why this project matters
 
