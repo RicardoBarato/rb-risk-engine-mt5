@@ -11,6 +11,10 @@ from datetime import datetime
 from pathlib import Path
 
 NS = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
+PRIVATE_OUTPUT_NOTICE = (
+    "Generated MT5 performance reports are private research artifacts by default. "
+    "Keep them under ignored folders such as reports/, runs/ or private/ unless the data is fully synthetic and explicitly approved for publication."
+)
 
 
 @dataclass(frozen=True)
@@ -409,6 +413,8 @@ def build_report(paths: list[Path]) -> str:
         "",
         "Relatorio gerado automaticamente por `tools/analyze_mt5_reports.py`.",
         "",
+        f"> Publication boundary: {PRIVATE_OUTPUT_NOTICE}",
+        "",
         "A leitura usa lucro liquido por posicao: lucro + comissao + swap.",
         "",
     ]
@@ -427,6 +433,7 @@ def build_report(paths: list[Path]) -> str:
             "5. Separate signal research from execution-risk controls.",
             "6. Validate ideas on demo data before any live use.",
             "7. Do not infer future performance from a single historical sample.",
+            "8. Do not commit generated performance reports unless they are synthetic and intentionally public.",
             "",
         ]
     )
@@ -436,7 +443,7 @@ def build_report(paths: list[Path]) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Analisa relatorios historicos do MT5 em XLSX.")
     parser.add_argument("reports", nargs="*", type=Path, help="Arquivos .xlsx. Se vazio, usa *.xlsx da pasta atual.")
-    parser.add_argument("--output", type=Path, default=Path("docs/analise_relatorios.md"))
+    parser.add_argument("--output", type=Path, default=Path("reports/private/analise_relatorios.md"))
     args = parser.parse_args()
 
     reports = args.reports or sorted(Path(".").glob("*.xlsx"))
@@ -446,6 +453,7 @@ def main() -> int:
     report = build_report([path for path in reports if path.suffix.lower() == ".xlsx"])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(report, encoding="utf-8")
+    print(PRIVATE_OUTPUT_NOTICE)
     print(f"Analise escrita em {args.output}")
     return 0
 
