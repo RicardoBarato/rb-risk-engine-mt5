@@ -1,4 +1,4 @@
-# MT5 EA Auto Backtest Engine
+# EA Auto Backtest Engine
 
 ![MQL5](https://img.shields.io/badge/MQL5-Expert%20Advisor-blue)
 ![MetaTrader 5](https://img.shields.io/badge/MetaTrader%205-supported-informational)
